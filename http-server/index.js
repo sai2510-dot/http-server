@@ -1,33 +1,38 @@
-
-   const express = require('express');
-const minimist = require('minimist');
+const http = require('http');
+const fs = require('fs');
 const path = require('path');
+const minimist = require('minimist');
 
-// Parse port argument
 const args = minimist(process.argv.slice(2));
 const port = args.port || 3000;
 
-const app = express();
+const server = http.createServer((req, res) => {
+  let filePath = '';
 
-// Serve static files (like HTML) from the current folder
-app.use(express.static(__dirname));
+  if (req.url === '/') {
+    filePath = path.join(__dirname, 'home.html');
+  } else if (req.url === '/project') {
+    filePath = path.join(__dirname, 'project.html');
+  } else if (req.url === '/registration') {
+    filePath = path.join(__dirname, 'registration.html');
+  } else {
+    res.writeHead(404);
+    res.end('Page not found');
+    return;
+  }
 
-// Home route
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'home.html'));
+  fs.readFile(filePath, (err, data) => {
+    if (err) {
+      res.writeHead(500);
+      res.end('Error loading page');
+      return;
+    }
+
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(data);
+  });
 });
 
-// Project route
-app.get('/project', (req, res) => {
-  res.sendFile(path.join(__dirname, 'project.html'));
-});
-
-// Registration route
-app.get('/registration', (req, res) => {
-  res.sendFile(path.join(__dirname, 'registration.html'));
-});
-
-// Start the server
-app.listen(port, () => {
-  console.log(`✅ Server is listening on port ${port}`);
+server.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}`);
 });

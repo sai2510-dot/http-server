@@ -1,38 +1,33 @@
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
-const minimist = require('minimist');
 
+   const express = require('express');
+const minimist = require('minimist');
+const path = require('path');
+
+// Parse port argument
 const args = minimist(process.argv.slice(2));
 const port = args.port || 3000;
 
-const server = http.createServer((req, res) => {
-  let filePath = '';
+const app = express();
 
-  if (req.url === '/' || req.url === '/home') {
-    filePath = 'home.html';
-  } else if (req.url === '/project') {
-    filePath = 'project.html';
-  } else if (req.url === '/registration') {
-    filePath = 'registration.html';
-  } else {
-    res.writeHead(404, { 'Content-Type': 'text/plain' });
-    res.end('404 Not Found');
-    return;
-  }
+// Serve static files (like HTML) from the current folder
+app.use(express.static(__dirname));
 
-  const fullPath = path.join(__dirname, filePath);
-  fs.readFile(fullPath, (err, data) => {
-    if (err) {
-      res.writeHead(500, { 'Content-Type': 'text/plain' });
-      res.end('Internal Server Error');
-    } else {
-      res.writeHead(200, { 'Content-Type': 'text/html' });
-      res.end(data);
-    }
-  });
+// Home route
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'home.html'));
 });
 
-server.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+// Project route
+app.get('/project', (req, res) => {
+  res.sendFile(path.join(__dirname, 'project.html'));
+});
+
+// Registration route
+app.get('/registration', (req, res) => {
+  res.sendFile(path.join(__dirname, 'registration.html'));
+});
+
+// Start the server
+app.listen(port, () => {
+  console.log(`✅ Server is listening on port ${port}`);
 });
